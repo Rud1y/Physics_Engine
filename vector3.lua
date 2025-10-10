@@ -43,10 +43,9 @@ function Vector3:normalize()
     if len > 0 then
         return self:div(len)
     end
-    return Vector3.new(0, 0, 0) -- Or handle error/return specific vector
+    return Vector3.new(0, 0, 0)
 end
 
--- Basic cross product
 function Vector3:cross(other)
     return Vector3.new(
         self.y * other.z - self.z * other.y,
