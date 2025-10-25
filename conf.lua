@@ -7,4 +7,5 @@ function love.conf(app)
     app.window.height = 720
     app.window.resizable = true
     app.window.title = "Physics Engine"
+    app.console = true
 end

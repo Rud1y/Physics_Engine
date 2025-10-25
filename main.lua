@@ -1,5 +1,13 @@
 ---@diagnostic disable: lowercase-global
 
+--[[RESTRUCTURE:
+new utility file for:
+-collision detection
+-collision resolution
+-inercia tensor calculation
+-broadphase methods, narrowphase methods
+]]
+
 local love = require("love")
 
 local Vector3 = require("vector3")
@@ -15,7 +23,7 @@ local worldBounds = {
 }
 local cam
 
-local kickStrength = 10
+local kickStrength = 5
 local maxKickDistance = 15
 
 function raySphereIntersect(rayOrigin, rayDir, spherePos, sphereRadius)
@@ -34,7 +42,7 @@ end
 
 function rayCubeIntersect(rayOrigin, rayDir, cube, faceName)
     local planeNormal
-    local pointOnPlane -- We can use the center of the face as a point on the plane
+    local pointOnPlane
 
     local hE = cube.halfExtents
     if faceName == "front" then -- -Z face
@@ -59,29 +67,21 @@ function rayCubeIntersect(rayOrigin, rayDir, cube, faceName)
         return nil
     end
 
-    -- 2. Calculate Ray-Plane Intersection
     local denominator = rayDir:dot(planeNormal)
 
-    -- Check if ray is parallel to the plane.
-    -- We use a small epsilon to avoid floating point precision issues.
     if math.abs(denominator) < 0.0001 then
-        return nil -- Ray is parallel, no single intersection point.
+        return nil
     end
 
     local numerator = (pointOnPlane:sub(rayOrigin)):dot(planeNormal)
     local t = numerator / denominator
 
-    -- If t is negative, the intersection is behind the ray's origin.
     if t < 0 then
         return nil
     end
 
-    -- 3. Calculate the intersection point in 3D space
     local intersectionPoint = rayOrigin:add(rayDir:mul(t))
 
-    -- 4. Point-in-Quad Test
-    -- Check if the intersection point is within the boundaries of the face.
-    -- We can do this by checking the coordinates that are NOT the primary axis of the normal.
     if faceName == "front" or faceName == "back" then
         if math.abs(intersectionPoint.x - cube.position.x) > hE.x or
             math.abs(intersectionPoint.y - cube.position.y) > hE.y then
@@ -99,7 +99,6 @@ function rayCubeIntersect(rayOrigin, rayDir, cube, faceName)
         end
     end
 
-    -- If all checks pass, we have a valid intersection on the face.
     return t, intersectionPoint
 end
 
@@ -162,7 +161,6 @@ function performKick()
         local simplifiedInvInertia = 1.0
         local angularVelocityChange = angularImpulse:mul(simplifiedInvInertia * closestObject.invMass)
 
-        --TODO: improve angular velocity change calculation
         closestObject.angularVelocity = closestObject.angularVelocity:add(angularVelocityChange)
     end
 end
@@ -176,7 +174,7 @@ function love.load()
         Vector3.new(0, 20, 0),
         Vector3.new(0, 1, 0),
         math.rad(60),
-        love.graphics.getWidth() / love.graphics.getHeight(), 
+        love.graphics.getWidth() / love.graphics.getHeight(),
         0.1,
         100)
 

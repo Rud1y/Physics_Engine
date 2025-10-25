@@ -3,6 +3,14 @@ local Vector3 = require("vector3")
 local RigidBody = {}
 RigidBody.__index = RigidBody
 
+--[[RESTRUCTURE:
+position, velocity, angular velocity, force, torque: Vector3
+orientation: quaternion (x, y, z, w)
+mass, invverse mass, bounciness, friction: scalar
+inercia tensor, inverse inercia tensor: 3x3 matrix
+]]
+
+
 function RigidBody.new(params)
     local self = setmetatable({}, RigidBody)
     self.position = params.position or Vector3.new(0, 0, 0)
@@ -71,7 +79,8 @@ function RigidBody:update(dt)
     self.orientation.z = self.orientation.z + q_new_z
     self.orientation.w = self.orientation.w + q_new_w
 
-    local mag = math.sqrt(self.orientation.x ^ 2 + self.orientation.y ^ 2 + self.orientation.z ^ 2 + self.orientation.w ^ 2)
+    local mag = math.sqrt(self.orientation.x ^ 2 + self.orientation.y ^ 2 + self.orientation.z ^ 2 +
+    self.orientation.w ^ 2)
     if mag > 0 then
         self.orientation.x = self.orientation.x / mag
         self.orientation.y = self.orientation.y / mag
